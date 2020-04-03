@@ -1,0 +1,7 @@
+input : /data/processed/firefox
+classifier : ensemble
+samplingType : entropy
+testsize : 0.2
+manualAnnotationsCount : 3
+maxIterations : 20
+comments : Ensemble-entropy-3

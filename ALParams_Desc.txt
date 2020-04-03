@@ -1,0 +1,7 @@
+input 		           :  path to requirement combinations data file 
+classifier	           :  Please provide the classifier you wish to use for the prediction model - 'RF' for Random Forest / 'NB' for Naive Bayes / 'SVM' for Support Vector Machine / 'emsenble' for Ensemble model. {RF/NB/SVM/ensemble}
+testsize 	       :  Test Split ratio. Allowed value less than 1.0 {0.1,0.2....0.9,1.0}
+samplingType 	       :  Uncertainity Sampling Type {leastConfidence,minMargin,entropy}
+manualAnnotationsCount :  Number of manual annotations to be done in each iteration of active learning {1,2,3,4,5.....}
+maxIterations          :  Maximum number of Active Learning iterations 
+comments 	           :  Any comments you wish to add in the logs for tracking purpose
