@@ -1,23 +1,21 @@
 import logs
 import numpy as np
 import pandas as pd
-from sklearn.utils import shuffle
-from splitData import balanceDataSet
 from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.svm import SVC
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import cross_val_score,train_test_split
 from sklearn.metrics import f1_score,precision_score,recall_score,confusion_matrix,classification_report
-from textblob import TextBlob
-from sklearn.utils import shuffle
 from sklearn.ensemble import VotingClassifier
 from sklearn.model_selection import StratifiedKFold
+from imblearn.over_sampling import SMOTE 
+from collections import Counter
 
-
-def createClassifier(clf,df_trainSet,df_testSet):
+def createClassifier(clf,df_trainSet,df_testSet,resampling_type):
     '''
     Passes the dataset via NLP Pipeline (Count Vectorizer , TFIDF Transformer)
+    Performs Synthetic Monitoring Over-Sampling after performing TFIDF transformation (ONLY when resampling_type is over_sampling)
     Trains the classifier (Random Forest / Naive Bayes / SVM / Ensemble using Voting Classifier)
 
     Parameters : 
@@ -41,9 +39,9 @@ def createClassifier(clf,df_trainSet,df_testSet):
 
     #Convert dataframes to numpy array's
     X_train = df_trainSet.loc[:,['req_1','req_2']]  #Using req_1,req_2 rather than req1,req2 because req_1,req_2 have been cleaned - lower case+punctuations
-    y_train = df_trainSet.loc[:,'Label']
+    y_train = df_trainSet.loc[:,'Label'].astype("int")
     X_test = df_testSet.loc[:,['req_1','req_2']]
-    y_test = df_testSet.loc[:,'Label']
+    y_test = df_testSet.loc[:,'Label'].astype("int")
 
     logs.writeLog("\nTraining Set Size : "+str(len(X_train)))
     logs.writeLog("\nTrain Set Value Count : \n"+str(df_trainSet['Label'].value_counts()))
@@ -61,13 +59,22 @@ def createClassifier(clf,df_trainSet,df_testSet):
     tfidf_transformer = TfidfTransformer()
     X_train_tfidf= tfidf_transformer.fit_transform(X_train_counts)
     
+    #######################################################################################
+    if resampling_type == "over_sampling":
+        logs.writeLog("Value Count for each class in training set."+str(Counter(y_train)))
+        
+        logs.writeLog("Performing Over Sampling")
+        sm = SMOTE(random_state=0)
+        X_train_tfidf, y_train = sm.fit_resample(X_train_tfidf, y_train)
+        logs.writeLog("Value Count for each class in training set."+str(Counter(y_train)))
+    #######################################################################################
     X_test_counts = count_vect.transform(np.array(X_test))
     X_test_tfidf = tfidf_transformer.transform(X_test_counts)
     
     #Initiate Classifiers
-    rf_model = RandomForestClassifier()
+    rf_model = RandomForestClassifier(random_state=0)
     nb_model = MultinomialNB()
-    svm_model = SVC(probability=True)  #predict_proba not available if probability = False
+    svm_model = SVC(random_state = 0, probability=True)  #predict_proba not available if probability = False
 
     #Random Forest Classifier Creation
     if clf == "RF" :
@@ -126,8 +133,8 @@ def Crossfoldvalidation(cv,tfidf,clf_model,df_validationSet):
     
     #Convert Dataframe to numpy array
     predictData = np.array(df_validationSet.loc[:,['req_1','req_2']])
-    actualLabels = np.array(df_validationSet.loc[:,"Label"]).astype('int')
-
+    actualLabels = np.array(df_validationSet.loc[:,"Label"]).astype('int')   
+     
     #Pass the data through nlp pipeline
     predict_counts = cv.transform(predictData)
     predict_tfidf = tfidf.transform(predict_counts)
@@ -192,7 +199,6 @@ def validateClassifier(cv,tfidf,clf_model,df_validationSet):
     '''
     
     predictData = np.array(df_validationSet.loc[:,['req_1','req_2']])
-    
     actualLabels = np.array(df_validationSet.loc[:,'Label']).astype('int')
     predict_counts = cv.transform(predictData)
     predict_tfidf = tfidf.transform(predict_counts)

@@ -16,10 +16,10 @@ def createLogs(fPath,args):
     if not os.path.exists(fPath+"/"+current_date):
         os.makedirs(fPath+"/"+current_date)
     global logFilePath,outputFilePath,resultsPath,annotationsPath
-    logFilePath = fPath+"/"+current_date+"/"+current_time+"-"+args.loc[0,'classifier']+"-"+args.loc[0,'comments']+".txt"
-    outputFilePath = fPath+"/"+current_date+"/"+current_time+"-"+args.loc[0,'classifier']+"-"+args.loc[0,'comments']+".csv"
-    resultsPath = fPath+"/"+current_date+"/"+current_time+"-"+args.loc[0,'classifier']+"-RESULTS-"+args.loc[0,'comments']+".csv"
-    annotationsPath = fPath+"/"+current_date+"/"+current_time+"-"+args.loc[0,'classifier']+"-ANNOTATIONS-"+args.loc[0,'comments']+".csv"
+    logFilePath = fPath+"/"+current_date+"/"+current_time+"-"+args.loc[0,'classifier']+"-"+args.loc[0,'resampling']+"_"+args.loc[0,'comments']+".txt"
+    outputFilePath = fPath+"/"+current_date+"/"+current_time+"-"+args.loc[0,'classifier']+"-"+args.loc[0,'resampling']+"_"+args.loc[0,'comments']+".csv"
+    resultsPath = fPath+"/"+current_date+"/"+current_time+"-"+args.loc[0,'classifier']+"-RESULTS-"+args.loc[0,'resampling']+"_"+args.loc[0,'comments']+".csv"
+    annotationsPath = fPath+"/"+current_date+"/"+current_time+"-"+args.loc[0,'classifier']+"-ANNOTATIONS-"+args.loc[0,'resampling']+"_"+args.loc[0,'comments']+".csv"
     for fPath in [logFilePath,outputFilePath]:
         file = open(fPath,'a')
         file.write("\n"+100*"-"+"\nArguments :- \n")
@@ -54,7 +54,7 @@ def validateArguments(df_args):
     try:
         if not os.path.exists(os.getcwd()+df_args.loc[0,'input']):
             raise("")
-        elif ((df_args.loc[0,'classifier'] not in ['RF','NB','SVM','ensemble']) or (df_args.loc[0,'samplingType'] not in ['leastConfidence','minMargin','entropy']) ):
+        elif ((df_args.loc[0,'classifier'] not in ['RF','NB','SVM','ensemble']) or (df_args.loc[0,'resampling'] not in ['under_sampling','over_sampling'])or (df_args.loc[0,'samplingType'] not in ['leastConfidence','minMargin','entropy']) ):
             raise ("")
         elif (float(df_args.loc[0,'testsize']) not in [x/10 for x in range(0,11)]):
             raise ("")

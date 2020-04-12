@@ -1,7 +1,8 @@
 input : /data/processed/firefox
-classifier : ensemble
-samplingType : entropy
+resampling : over_sampling
+classifier : RF
+samplingType : leastConfidence
 testsize : 0.2
-manualAnnotationsCount : 3
+manualAnnotationsCount : 10
 maxIterations : 20
-comments : Ensemble-entropy-3
+comments : RF-leastConfidence-10
