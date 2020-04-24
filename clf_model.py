@@ -61,12 +61,12 @@ def createClassifier(clf,df_trainSet,df_testSet,resampling_type):
     
     #######################################################################################
     if resampling_type == "over_sampling":
-        logs.writeLog("Value Count for each class in training set."+str(Counter(y_train)))
+        logs.writeLog("\n\nValue Count for each class in training set."+str(Counter(y_train)))
         
-        logs.writeLog("Performing Over Sampling")
+        logs.writeLog("\n\nPerforming Over Sampling")
         sm = SMOTE(random_state=0)
         X_train_tfidf, y_train = sm.fit_resample(X_train_tfidf, y_train)
-        logs.writeLog("Value Count for each class in training set."+str(Counter(y_train)))
+        logs.writeLog("\n\nValue Count for each class in training set."+str(Counter(y_train)))
     #######################################################################################
     X_test_counts = count_vect.transform(np.array(X_test))
     X_test_tfidf = tfidf_transformer.transform(X_test_counts)
@@ -92,7 +92,7 @@ def createClassifier(clf,df_trainSet,df_testSet,resampling_type):
     elif clf == "ensemble":
         #Predict_proba works only when Voting = 'soft'
         #n_jobs = -1 makes allows models to be created in parallel (using all the cores, else we can mention 2 for using 2 cores)
-        clf_model = VotingClassifier(estimators=[('RF', rf_model), ('NB', nb_model),('SVM',svm_model)], voting='soft',n_jobs=-1)  
+        clf_model = VotingClassifier(estimators=[('RF', rf_model), ('NB', nb_model),('SVM',svm_model)], voting='soft',n_jobs=1)  
         clf_model.fit(X_train_tfidf,np.array(y_train).astype('int'))
 
     #Predict labels

@@ -24,7 +24,7 @@ def get_args():
     return args
 
 
-def splitDataSet(df_rqmts,frac,resamplingType):
+def splitDataSet(df_rqmts,frac,balancedClass):
     '''
     Performs data balancing by undersampling.
         1. Does a value count for each class label and extacts the minimum value.
@@ -54,13 +54,14 @@ def splitDataSet(df_rqmts,frac,resamplingType):
     
     for key in stats.keys():
         #Sample out some values for df_data Set for each label 0,1,2,3
-        if (resamplingType == "over_sampling"):
+        if (balancedClass == False):
             sample_count = int(stats[key]*float(frac))  
-            if (sample_count>500):  #Limiting Sample Count to 500
-                sample_count = 500
-        else:
+            if (sample_count>2000):  #Limiting Sample Count to 500
+                sample_count = 2000
+        elif (balancedClass == True):
             sample_count = sample_count = int(stats.min()*float(frac))
-
+        else:
+            raise ("Invalid Input. Please enter True/False for balancedClass.")
         df_sample = df_rqmts[df_rqmts["Label"]==key].sample(sample_count)
         print ("\nSampled "+str(len(df_sample))+" Combinations for class "+str(key) + " ("+str(frac)+" of the total combinations)") 
      
@@ -95,85 +96,45 @@ def main():
 
     cols = ['comboId','req1Id','req1','req_1','req2Id','req2','req_2','Label','AnnotationStatus']
     
-    print ("\nPreparing Data for Random Under Sampling")
+    print ("\nPreparing Data.......")
     print ("\n"+"-"*150)
-    print("Fetching data from the input file and Marking 40% of the balanced combinations as Manually Annotated. Setting 'Annotation Status' as 'M'")
+    print("Fetching data from the input file and Marking 10% of the combinations as Manually Annotated. Setting 'Annotation Status' as 'M'")
     print ("-"*150)
 
-    df_ManuallyAnnotatedSet,df_toBeAnnotatedSet = splitDataSet(df_data,0.4,"under_sampling") 
+    df_ManuallyAnnotatedSet,df_toBeAnnotatedSet = splitDataSet(df_data,0.1, balancedClass = False) 
     df_ManuallyAnnotatedSet = df_ManuallyAnnotatedSet[cols]
     df_toBeAnnotatedSet = df_toBeAnnotatedSet[cols]
     df_ManuallyAnnotatedSet['AnnotationStatus'] = 'M'
     print ("df_ManuallyAnnnotatedSet \n"+str( df_ManuallyAnnotatedSet['Label'].value_counts()))
 
     print ("df_toBeAnnotatedSet \n"+str( df_toBeAnnotatedSet['Label'].value_counts()))
-
-    print ("\n"+"-"*100)
-    print("\nSplitting the Manually annotated data into validation set and initial traning/test set")
-    print ("-"*100)
-    df_validationSet,df_labelledSet = splitDataSet(df_ManuallyAnnotatedSet,0.2,"under_sampling")
-    
-    print ("df_validationSet \n"+str( df_validationSet['Label'].value_counts()))
-
-    print ("df_labelledSet \n"+str( df_labelledSet['Label'].value_counts()))
-
-    print ("\n"+"-"*100)
-    print("\nSplitting the Manually annotated data into validation set and initial traning/test set")
-    print ("-"*100)
-    
-    df_trainingSet,df_testSet = splitDataSet(df_labelledSet,0.8,"under_sampling")
-
-    print ("df_trainingSet \n"+str( df_trainingSet['Label'].value_counts()))
-
-    print ("df_testSet \n"+str( df_testSet['Label'].value_counts()))
-    
-    print ("\nSaving the datasets after splitting at : "+odirName+"/under_sampling")
-    
-    df_ManuallyAnnotatedSet.to_csv(odirName+"/under_sampling/ManuallyAnnotated.csv",index=False)
-    df_toBeAnnotatedSet.to_csv(odirName+"/under_sampling/ToBeAnnotated.csv",index=False)
-    df_validationSet.to_csv(odirName+"/under_sampling/ValidationSet.csv",index=False)
-    df_trainingSet.to_csv(odirName+"/under_sampling/TrainingSet.csv",index=False)
-    df_testSet.to_csv(odirName+"/under_sampling/TestSet.csv",index=False)
-    
-    
-    ################################################################################################################################################################
-    print ("\nPreparing Data for Random Over Sampling")
-    print ("\n"+"-"*150)
-    print("Marking 10% of the combinations for each class as Manually Annotated. Setting 'Annotation Status' as 'M'")
-    print ("-"*150)
-
-    df_ManuallyAnnotatedSet,df_toBeAnnotatedSet = splitDataSet(df_data,0.1 ,"over_sampling") 
-    df_ManuallyAnnotatedSet = df_ManuallyAnnotatedSet[cols]
-    df_toBeAnnotatedSet = df_toBeAnnotatedSet[cols]
-    df_ManuallyAnnotatedSet['AnnotationStatus'] = 'M'
-    
-    print ("df_ManuallyAnnnotatedSet \n"+str( df_ManuallyAnnotatedSet['Label'].value_counts()))
-
-    print ("df_toBeAnnotatedSet \n"+str( df_toBeAnnotatedSet['Label'].value_counts()))
     
     print ("\n"+"-"*100)
     print("\nSplitting the Manually annotated data into validation set and initial traning/test set")
     print ("-"*100)
-    df_validationSet,df_labelledSet = splitDataSet(df_ManuallyAnnotatedSet,0.3,"over_sampling")
+    df_validationSet,df_labelledSet = splitDataSet(df_ManuallyAnnotatedSet,0.2, balancedClass=False)
     
     print ("df_validationSet \n"+str( df_validationSet['Label'].value_counts()))
 
     print ("df_labelledSet \n"+str( df_labelledSet['Label'].value_counts()))
     
-
-    df_trainingSet,df_testSet = splitDataSet(df_labelledSet,0.8,"over_sampling")
+    print ("\n"+"-"*100)
+    print("\nSplitting the Manually annotated data into validation set and initial traning/test set")
+    print ("-"*100)
+    
+    df_trainingSet,df_testSet = splitDataSet(df_labelledSet,0.8, balancedClass=False)
 
     print ("df_trainingSet \n"+str( df_trainingSet['Label'].value_counts()))
 
     print ("df_testSet \n"+str( df_testSet['Label'].value_counts()))
-
-    print ("\nSaving the datasets after splitting at : "+odirName+"/over_sampling")
     
-    df_ManuallyAnnotatedSet.to_csv(odirName+"/over_sampling/ManuallyAnnotated.csv",index=False)
-    df_toBeAnnotatedSet.to_csv(odirName+"/over_sampling/ToBeAnnotated.csv",index=False)
-    df_validationSet.to_csv(odirName+"/over_sampling/ValidationSet.csv",index=False)
-    df_trainingSet.to_csv(odirName+"/over_sampling/TrainingSet.csv",index=False)
-    df_testSet.to_csv(odirName+"/over_sampling/TestSet.csv",index=False)
+    print ("\nSaving the datasets after splitting at : "+odirName)
+    
+    df_ManuallyAnnotatedSet.to_csv(odirName+"/ManuallyAnnotated.csv",index=False)
+    df_toBeAnnotatedSet.to_csv(odirName+"/ToBeAnnotated.csv",index=False)
+    df_validationSet.to_csv(odirName+"/ValidationSet.csv",index=False)
+    df_trainingSet.to_csv(odirName+"/TrainingSet.csv",index=False)
+    df_testSet.to_csv(odirName+"/TestSet.csv",index=False)
     
 if __name__ == "__main__":
     main()

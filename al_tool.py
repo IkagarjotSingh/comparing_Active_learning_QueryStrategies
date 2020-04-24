@@ -36,18 +36,20 @@ def learnTargetLabel(args):
     logs.writeLog("Fetching data from the input directory.")
     #Read To be Annotated, Training, Test and Validation Sets generated after executing splitData.py
     try:
-        df_tobeAnnotated = pd.read_csv(idir+"/"+resamplingTechnique+"/ToBeAnnotated.csv")
-        df_training = pd.read_csv(idir+"/"+resamplingTechnique+"/TrainingSet.csv")
-        df_test = pd.read_csv(idir+"/"+resamplingTechnique+"/TestSet.csv")
+        df_tobeAnnotated = pd.read_csv(idir+"/ToBeAnnotated.csv")
+        df_training = pd.read_csv(idir+"/TrainingSet.csv")
+        df_test = pd.read_csv(idir+"/TestSet.csv")
         df_manuallyAnnotated = pd.concat([df_training,df_test])
-        df_validation = pd.read_csv(idir+"/"+resamplingTechnique+"/ValidationSet.csv")
+        df_validation = pd.read_csv(idir+"/ValidationSet.csv")
+
+        #Combines all requirement combinations in a single DataFrame
+        df_rqmts = pd.concat([df_manuallyAnnotated,df_tobeAnnotated])
+    
     except FileNotFoundError as err:
         logs.writeLog ("File Not Found! Please provide correct path of the directory containing Training, Test, Validation, ToBeAnnotated and Manually Annotated DataSet.")
         print (err)
-        exit
+        exit()
 
-    #Combines all requirement combinations in a single DataFrame
-    df_rqmts = pd.concat([df_manuallyAnnotated,df_tobeAnnotated])
     
     #Create a dataframe to track the results
     #df_resultTracker = pd.DataFrame(columns=['Iteration','ManuallyAnnotated','ToBeAnnotated','TrainingSize','TestSize','ValidationSize','ClassifierTestScore','ClassifierValidationScore','IndependentCount','RequiresCount','SimilarCount','BlocksCount','t_5FoldCVScore','t_10FoldCVScore','t_f1Score','t_precisionScore','t_recallScore','v_f1Score','v_precisionScore','v_recallScore','v_5FoldCVScore','v_10FoldCVScore'])
@@ -68,7 +70,7 @@ def learnTargetLabel(args):
             logs.writeLog("df_manuallyAnnotated len : " +str(len(df_manuallyAnnotated))) 
             #if resamplingTechnique  == "under_sampling":
             logs.writeLog("\nSplitting the Training/Test Set into training and test set - "+str(1-splitratio)+"/"+str(splitratio)+" split.")
-            df_training,df_test = splitDataSet(df_manuallyAnnotated,1-splitratio,resamplingTechnique)
+            df_training,df_test = splitDataSet(df_manuallyAnnotated,1-splitratio, balancedClass = False)
     #        else:
 
             df_tobeAnnotated = df_rqmts[df_rqmts['AnnotationStatus']!='M']
